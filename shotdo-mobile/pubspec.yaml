@@ -1,0 +1,30 @@
+name: shotdo_mobile
+description: A new Flutter project for ShotDo - Daily photo verified to-do list calendar.
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.6
+  
+  # API 호출
+  http: ^1.2.0
+
+  # 카메라 및 갤러리 활용
+  camera: ^0.10.5+9
+  image_picker: ^1.0.7
+  
+  # 이미지 압축 (S3 전송용 최적화)
+  flutter_image_compress: ^2.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,36 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Spring Boot
+.gradle/
+build/
+out/
+bin/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Flutter / Dart
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+/shotdo-mobile/build/
+
+# OS files
+.DS_Store
+Thumbs.db
