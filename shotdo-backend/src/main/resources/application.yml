@@ -14,5 +14,8 @@ spring:
 
 aws:
   s3:
-    bucket: shotdo-auth-photos
+    bucket: shotdo-auth-photos-yeojisun
     region: ap-northeast-2
+  credentials:
+    accessKey: ${AWS_ACCESS_KEY_ID}
+    secretKey: ${AWS_SECRET_ACCESS_KEY}
