@@ -755,3 +755,97 @@ h2 {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+/* Authentication Screen */
+.login-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.auth-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.toggle-link-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-mint);
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.toggle-link-btn:hover {
+  color: #34d399;
+  text-decoration: underline;
+}
+
+.auth-error-banner {
+  background: var(--color-red-glow);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--color-red);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.logout-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: var(--color-red-glow);
+  color: var(--color-red);
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.user-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
