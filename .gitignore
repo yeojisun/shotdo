@@ -23,6 +23,7 @@ bin/
 .classpath
 .project
 .settings/
+**/application-local.yml
 
 # Flutter / Dart
 .dart_tool/
