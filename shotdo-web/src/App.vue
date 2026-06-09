@@ -354,7 +354,7 @@ export default {
   setup() {
     // API CONFIG
     // 로컬 Spring Boot 실행 주소. 실서버 배포 시 Beanstalk 주소로 교체 가능합니다.
-    const API_BASE = 'http://localhost:8080'
+    const API_BASE = 'http://shotdo-api-yeojisun.ap-northeast-2.elasticbeanstalk.com'
 
     // Auth States
     const token = ref(localStorage.getItem('shotdo_token') || null)
