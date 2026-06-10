@@ -114,16 +114,25 @@
 
           <!-- Weekly Header (Week View) -->
           <div v-else class="calendar-header">
-            <button @click="prevWeek" class="calendar-nav-btn" aria-label="이전 주">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <button @click="prevWeek" class="calendar-nav-btn" aria-label="이전 주">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+              </button>
+              <h2 class="calendar-month-year">{{ formattedCurrentWeek }}</h2>
+              <button @click="nextWeek" class="calendar-nav-btn" aria-label="다음 주">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+              </button>
+            </div>
+            
+            <button @click="downloadSnapshot" class="btn-share">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="15 18 9 12 15 6"></polyline>
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
               </svg>
-            </button>
-            <h2 class="calendar-month-year">{{ formattedCurrentWeek }}</h2>
-            <button @click="nextWeek" class="calendar-nav-btn" aria-label="다음 주">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <polyline points="9 18 15 12 9 6"></polyline>
-              </svg>
+              스냅샷 저장
             </button>
           </div>
 
@@ -163,41 +172,59 @@
             </div>
           </div>
 
-          <!-- Weekly Polaroid Board -->
-          <div v-else class="weekly-board">
-            <div 
-              v-for="cell in weeklyDays" 
-              :key="cell.dateString"
-              class="weekly-day-card"
-              :class="{ 
-                'today': cell.isToday,
-                'status-verified': cell.isVerified,
-                'selected-day': cell.isSelected
-              }"
-              @click="selectDate(cell.date)"
-            >
-              <div class="weekly-card-header">
-                <span class="weekly-day-name">{{ cell.dayName }}</span>
-                <span class="weekly-date-num">{{ cell.dayNumber }}</span>
+          <!-- Weekly Polaroid Board (Share Target) -->
+          <div v-else id="share-board-container" class="weekly-board-wrapper">
+            <div class="share-board-header">
+              <div class="share-brand">
+                <div class="logo-icon-mini">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
+                  </svg>
+                </div>
+                <span class="share-logo-text">ShotDo</span>
               </div>
-              
-              <div class="weekly-card-body">
-                <!-- If photo verification exists -->
-                <div v-if="cell.isVerified && cell.photo" class="weekly-photo-container">
-                  <img :src="cell.photo" alt="인증샷" class="weekly-day-photo" />
-                  <div class="weekly-success-badge">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                    </svg>
-                  </div>
+              <div class="share-info">
+                <span class="share-username">{{ nickname }}님</span>
+                <span class="share-streak">연속 {{ streak }}일째 인증 완료 🔥</span>
+              </div>
+              <div class="share-date-range">{{ formattedCurrentWeek }}</div>
+            </div>
+
+            <div class="weekly-board">
+              <div 
+                v-for="cell in weeklyDays" 
+                :key="cell.dateString"
+                class="weekly-day-card"
+                :class="{ 
+                  'today': cell.isToday,
+                  'status-verified': cell.isVerified,
+                  'selected-day': cell.isSelected
+                }"
+                @click="selectDate(cell.date)"
+              >
+                <div class="weekly-card-header">
+                  <span class="weekly-day-name">{{ cell.dayName }}</span>
+                  <span class="weekly-date-num">{{ cell.dayNumber }}</span>
                 </div>
                 
-                <!-- Placeholder if no photo verification yet -->
-                <div v-else class="weekly-empty-placeholder">
-                  <div v-if="cell.hasTodos" class="weekly-todo-indicator">
-                    <span class="pending-badge">Pending</span>
+                <div class="weekly-card-body">
+                  <!-- If photo verification exists -->
+                  <div v-if="cell.isVerified && cell.photo" class="weekly-photo-container">
+                    <img :src="cell.photo" alt="인증샷" class="weekly-day-photo" />
+                    <div class="weekly-success-badge">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                      </svg>
+                    </div>
                   </div>
-                  <div v-else class="weekly-empty-label">-</div>
+                  
+                  <!-- Placeholder if no photo verification yet -->
+                  <div v-else class="weekly-empty-placeholder">
+                    <div v-if="cell.hasTodos" class="weekly-todo-indicator">
+                      <span class="pending-badge">Pending</span>
+                    </div>
+                    <div v-else class="weekly-empty-label">-</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -424,6 +451,7 @@
 
 <script>
 import { ref, computed, onMounted, watch } from 'vue'
+import html2canvas from 'html2canvas'
 
 export default {
   name: 'App',
@@ -853,6 +881,29 @@ export default {
       currentMonth.value = new Date(d.getFullYear(), d.getMonth(), 1)
     }
 
+    const downloadSnapshot = async () => {
+      const element = document.getElementById('share-board-container')
+      if (!element) return
+      
+      try {
+        const canvas = await html2canvas(element, {
+          backgroundColor: '#0a0c10',
+          useCORS: true,
+          scale: 2,
+          logging: false
+        })
+        
+        const dataUrl = canvas.toDataURL('image/png')
+        const link = document.createElement('a')
+        link.href = dataUrl
+        link.download = `shotdo-weekly-${formatDateKey(selectedDate.value)}.png`
+        link.click()
+      } catch (e) {
+        console.error('Snapshot capture failed', e)
+        alert('스냅샷 생성 중 오류가 발생했습니다. S3 이미지의 CORS 설정이 올바른지 확인해 주세요.')
+      }
+    }
+
     const selectDate = (date) => {
       selectedDate.value = new Date(date.getFullYear(), date.getMonth(), date.getDate())
     }
@@ -1050,6 +1101,7 @@ export default {
       nextMonth,
       prevWeek,
       nextWeek,
+      downloadSnapshot,
       selectDate,
       addTodo,
       toggleTodo,
