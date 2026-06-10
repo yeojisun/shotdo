@@ -62,6 +62,24 @@
           </div>
           <span class="logo-text">ShotDo</span>
         </div>
+
+        <!-- View Mode Toggle -->
+        <div class="view-toggle-container">
+          <button 
+            @click="viewMode = 'month'" 
+            class="view-toggle-btn" 
+            :class="{ active: viewMode === 'month' }"
+          >
+            월간 달력
+          </button>
+          <button 
+            @click="viewMode = 'week'" 
+            class="view-toggle-btn" 
+            :class="{ active: viewMode === 'week' }"
+          >
+            주간 보드
+          </button>
+        </div>
         
         <div class="user-profile">
           <span class="user-name">{{ nickname }}님</span>
@@ -79,7 +97,8 @@
       <div class="app-grid">
         <!-- Calendar Card -->
         <section class="glass-panel calendar-card">
-          <div class="calendar-header">
+          <!-- Calendar Header (Month View) -->
+          <div v-if="viewMode === 'month'" class="calendar-header">
             <button @click="prevMonth" class="calendar-nav-btn" aria-label="이전 달">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="15 18 9 12 15 6"></polyline>
@@ -93,7 +112,23 @@
             </button>
           </div>
 
-          <div class="calendar-grid">
+          <!-- Weekly Header (Week View) -->
+          <div v-else class="calendar-header">
+            <button @click="prevWeek" class="calendar-nav-btn" aria-label="이전 주">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <h2 class="calendar-month-year">{{ formattedCurrentWeek }}</h2>
+            <button @click="nextWeek" class="calendar-nav-btn" aria-label="다음 주">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Month Grid -->
+          <div v-if="viewMode === 'month'" class="calendar-grid">
             <!-- Day Headers -->
             <div v-for="dayName in dayNames" :key="dayName" class="day-header">
               {{ dayName }}
@@ -108,7 +143,8 @@
                 'other-month': !cell.isCurrentMonth, 
                 'today': cell.isToday,
                 'status-verified': cell.isVerified,
-                'status-has-todos': cell.hasTodos && !cell.isVerified
+                'status-has-todos': cell.hasTodos && !cell.isVerified,
+                'selected-day': cell.dateString === selectedDateKey
               }"
               :style="cell.isVerified && cell.photo ? { background: `url(${cell.photo})` } : {}"
               @click="selectDate(cell.date)"
@@ -124,6 +160,46 @@
               
               <!-- Alert dot if date has todos but not verified yet -->
               <div v-else-if="cell.hasTodos" class="day-todo-dot"></div>
+            </div>
+          </div>
+
+          <!-- Weekly Polaroid Board -->
+          <div v-else class="weekly-board">
+            <div 
+              v-for="cell in weeklyDays" 
+              :key="cell.dateString"
+              class="weekly-day-card"
+              :class="{ 
+                'today': cell.isToday,
+                'status-verified': cell.isVerified,
+                'selected-day': cell.isSelected
+              }"
+              @click="selectDate(cell.date)"
+            >
+              <div class="weekly-card-header">
+                <span class="weekly-day-name">{{ cell.dayName }}</span>
+                <span class="weekly-date-num">{{ cell.dayNumber }}</span>
+              </div>
+              
+              <div class="weekly-card-body">
+                <!-- If photo verification exists -->
+                <div v-if="cell.isVerified && cell.photo" class="weekly-photo-container">
+                  <img :src="cell.photo" alt="인증샷" class="weekly-day-photo" />
+                  <div class="weekly-success-badge">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <!-- Placeholder if no photo verification yet -->
+                <div v-else class="weekly-empty-placeholder">
+                  <div v-if="cell.hasTodos" class="weekly-todo-indicator">
+                    <span class="pending-badge">Pending</span>
+                  </div>
+                  <div v-else class="weekly-empty-label">-</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -382,6 +458,9 @@ export default {
     // Calendar States loaded from API
     // Format: { 'YYYY-MM-DD': { hasTodos: boolean, verified: boolean, photoUrl: string|null } }
     const calendarStates = ref({})
+    
+    // View mode: 'month' or 'week'
+    const viewMode = ref('month')
 
     // Selected date details
     const todosForSelectedDate = ref([])
@@ -472,7 +551,7 @@ export default {
     const fetchCalendarData = async () => {
       if (!token.value) return
       try {
-        const days = calendarDays.value
+        const days = viewMode.value === 'month' ? calendarDays.value : weeklyDays.value
         if (days.length === 0) return
         const start = days[0].dateString
         const end = days[days.length - 1].dateString
@@ -604,11 +683,29 @@ export default {
 
     watch(selectedDate, () => {
       fetchDayDetails()
+      if (viewMode.value === 'week') {
+        fetchCalendarData()
+      }
+    })
+
+    watch(viewMode, () => {
+      fetchCalendarData()
     })
 
     // Header formats
     const formattedCurrentMonth = computed(() => {
       return currentMonth.value.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long' })
+    })
+
+    const formattedCurrentWeek = computed(() => {
+      const days = weeklyDays.value
+      if (days.length === 0) return ''
+      const start = days[0].date
+      const end = days[6].date
+      
+      const startStr = start.toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' })
+      const endStr = end.toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' })
+      return `${startStr} ~ ${endStr}`
     })
 
     const formattedSelectedDateTitle = computed(() => {
@@ -697,12 +794,63 @@ export default {
       return cells
     })
 
+    const isSameDay = (d1, d2) => {
+      return d1.getFullYear() === d2.getFullYear() &&
+             d1.getMonth() === d2.getMonth() &&
+             d1.getDate() === d2.getDate()
+    }
+
+    const weeklyDays = computed(() => {
+      const sel = new Date(selectedDate.value)
+      const day = sel.getDay() // 0 is Sunday, 1 is Monday, etc.
+      
+      const diff = sel.getDate() - day
+      const sunday = new Date(sel.getFullYear(), sel.getMonth(), diff)
+
+      const cells = []
+      const todayKey = formatDateKey(today)
+      const selectedKey = selectedDateKey.value
+      
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(sunday)
+        d.setDate(sunday.getDate() + i)
+        
+        const dStr = formatDateKey(d)
+        cells.push({
+          date: d,
+          dateString: dStr,
+          dayNumber: d.getDate(),
+          dayName: dayNames[i],
+          isToday: dStr === todayKey,
+          isSelected: dStr === selectedKey,
+          isVerified: calendarStates.value[dStr]?.verified || false,
+          hasTodos: calendarStates.value[dStr]?.hasTodos || false,
+          photo: calendarStates.value[dStr]?.photoUrl || null
+        })
+      }
+      return cells
+    })
+
     const prevMonth = () => {
       currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() - 1, 1)
     }
 
     const nextMonth = () => {
       currentMonth.value = new Date(currentMonth.value.getFullYear(), currentMonth.value.getMonth() + 1, 1)
+    }
+
+    const prevWeek = () => {
+      const d = new Date(selectedDate.value)
+      d.setDate(d.getDate() - 7)
+      selectedDate.value = d
+      currentMonth.value = new Date(d.getFullYear(), d.getMonth(), 1)
+    }
+
+    const nextWeek = () => {
+      const d = new Date(selectedDate.value)
+      d.setDate(d.getDate() + 7)
+      selectedDate.value = d
+      currentMonth.value = new Date(d.getFullYear(), d.getMonth(), 1)
     }
 
     const selectDate = (date) => {
@@ -879,6 +1027,8 @@ export default {
       currentMonth,
       dayNames,
       calendarDays,
+      weeklyDays,
+      viewMode,
       todosForSelectedDate,
       totalTodosCount,
       completedTodosCount,
@@ -894,9 +1044,12 @@ export default {
       capturedImage,
       streak,
       formattedCurrentMonth,
+      formattedCurrentWeek,
       formattedSelectedDateTitle,
       prevMonth,
       nextMonth,
+      prevWeek,
+      nextWeek,
       selectDate,
       addTodo,
       toggleTodo,
