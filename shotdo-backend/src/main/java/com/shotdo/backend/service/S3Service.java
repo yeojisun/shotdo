@@ -31,11 +31,15 @@ public class S3Service {
      */
     public String generatePresignedUrl(String extension) {
         String fileName = UUID.randomUUID().toString() + "." + extension;
+        String contentType = "image/" + extension;
+        if ("jpg".equalsIgnoreCase(extension)) {
+            contentType = "image/jpeg";
+        }
         
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileName)
-                .contentType("image/" + extension)
+                .contentType(contentType)
                 .build();
 
         PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
