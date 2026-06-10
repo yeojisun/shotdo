@@ -194,7 +194,7 @@
               <div 
                 v-for="cell in weeklyDays" 
                 :key="cell.dateString"
-                class="weekly-day-card"
+                class="weekly-polaroid-card"
                 :class="{ 
                   'today': cell.isToday,
                   'status-verified': cell.isVerified,
@@ -202,29 +202,32 @@
                 }"
                 @click="selectDate(cell.date)"
               >
-                <div class="weekly-card-header">
-                  <span class="weekly-day-name">{{ cell.dayName }}</span>
-                  <span class="weekly-date-num">{{ cell.dayNumber }}</span>
+                <!-- Polaroid Photo Area (Square) -->
+                <div class="polaroid-photo-area">
+                  <img 
+                    v-if="cell.isVerified && cell.photo" 
+                    :src="cell.photo" 
+                    alt="인증샷" 
+                    class="polaroid-img" 
+                    crossorigin="anonymous"
+                  />
+                  <!-- Success check mark badge on image -->
+                  <div v-if="cell.isVerified" class="polaroid-success-badge">
+                    <svg viewBox="0 0 24 24">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                    </svg>
+                  </div>
+                  <!-- Placeholder if no photo yet -->
+                  <div v-else class="polaroid-empty-placeholder">
+                    <span v-if="cell.hasTodos" class="pending-badge">Pending</span>
+                    <span v-else class="empty-dot"></span>
+                  </div>
                 </div>
                 
-                <div class="weekly-card-body">
-                  <!-- If photo verification exists -->
-                  <div v-if="cell.isVerified && cell.photo" class="weekly-photo-container">
-                    <img :src="cell.photo" alt="인증샷" class="weekly-day-photo" />
-                    <div class="weekly-success-badge">
-                      <svg viewBox="0 0 24 24">
-                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-                      </svg>
-                    </div>
-                  </div>
-                  
-                  <!-- Placeholder if no photo verification yet -->
-                  <div v-else class="weekly-empty-placeholder">
-                    <div v-if="cell.hasTodos" class="weekly-todo-indicator">
-                      <span class="pending-badge">Pending</span>
-                    </div>
-                    <div v-else class="weekly-empty-label">-</div>
-                  </div>
+                <!-- Polaroid Bottom Caption -->
+                <div class="polaroid-caption">
+                  <span class="polaroid-day-name">{{ cell.dayName }}</span>
+                  <span class="polaroid-date-num">{{ cell.dayNumber }}</span>
                 </div>
               </div>
             </div>
