@@ -1,12 +1,11 @@
 spring:
-  profiles:
-    active: local
   datasource:
     url: jdbc:mysql://${DB_HOST:localhost}:3306/${DB_NAME:shotdo}?useSSL=false&serverTimezone=UTC&createDatabaseIfNotExist=true
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:yourpassword}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: update
     show-sql: true
