@@ -206,7 +206,7 @@
                 <div class="polaroid-photo-area">
                   <img 
                     v-if="cell.isVerified && cell.photo" 
-                    :src="cell.photo" 
+                    :src="cell.photo + '?t=' + cell.dateString" 
                     alt="인증샷" 
                     class="polaroid-img" 
                     crossorigin="anonymous"
