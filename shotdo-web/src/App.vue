@@ -1,5 +1,8 @@
 <template>
   <div>
+    <!-- Top Progress Loading Bar -->
+    <div v-if="isGlobalLoading" class="top-loading-bar"></div>
+
     <!-- Login / Signup Screen -->
     <div v-if="!token" class="login-wrapper">
       <div class="glass-panel login-card">
@@ -370,6 +373,14 @@
     <!-- Camera / File Auth Modal -->
     <div class="modal-overlay" :class="{ 'active': showCameraModal }">
       <div class="glass-panel modal-content">
+        <!-- Submitting/Uploading Overlay -->
+        <div v-if="isUploading" class="modal-uploading-overlay">
+          <div class="spinner-container">
+            <div class="loading-spinner"></div>
+          </div>
+          <p class="uploading-text">{{ uploadStatusMessage }}</p>
+        </div>
+
         <div class="modal-header">
           <h2 style="font-size: 1.25rem;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -505,6 +516,12 @@ export default {
     const isSelectedDateVerified = ref(false)
     const selectedDatePhoto = ref(null)
 
+    // Loading States
+    const activeRequestsCount = ref(0)
+    const isGlobalLoading = computed(() => activeRequestsCount.value > 0)
+    const isUploading = ref(false)
+    const uploadStatusMessage = ref('')
+
     const dayNames = ['일', '월', '화', '수', '목', '금', '토']
 
     // Date Format Helper
@@ -588,6 +605,7 @@ export default {
     // API Integration Functions
     const fetchCalendarData = async () => {
       if (!token.value) return
+      activeRequestsCount.value++
       try {
         const days = viewMode.value === 'month' ? calendarDays.value : weeklyDays.value
         if (days.length === 0) return
@@ -606,11 +624,14 @@ export default {
         }
       } catch (e) {
         console.error('Failed to fetch calendar data', e)
+      } finally {
+        activeRequestsCount.value--
       }
     }
 
     const fetchDayDetails = async () => {
       if (!token.value) return
+      activeRequestsCount.value++
       try {
         const res = await fetch(`${API_BASE}/api/todos?date=${selectedDateKey.value}`, {
           headers: { 'Authorization': token.value }
@@ -623,6 +644,8 @@ export default {
         }
       } catch (e) {
         console.error('Failed to fetch day details', e)
+      } finally {
+        activeRequestsCount.value--
       }
     }
 
@@ -652,6 +675,7 @@ export default {
     const addTodo = async () => {
       if (!newTodoText.value.trim() || isSelectedDateVerified.value) return
       
+      activeRequestsCount.value++
       try {
         const res = await fetch(`${API_BASE}/api/todos`, {
           method: 'POST',
@@ -667,14 +691,18 @@ export default {
 
         if (res.ok) {
           newTodoText.value = ''
-          await fetchDayDetails()
-          await fetchCalendarData()
+          await Promise.all([
+            fetchDayDetails(),
+            fetchCalendarData()
+          ])
         } else {
           const errData = await res.json()
           alert(errData.error || '할 일을 추가하지 못했습니다.')
         }
       } catch (e) {
         console.error(e)
+      } finally {
+        activeRequestsCount.value--
       }
     }
 
@@ -695,23 +723,30 @@ export default {
 
     const deleteTodo = async (todoId) => {
       if (isSelectedDateVerified.value) return
+      activeRequestsCount.value++
       try {
         const res = await fetch(`${API_BASE}/api/todos/${todoId}`, {
           method: 'DELETE',
           headers: { 'Authorization': token.value }
         })
         if (res.ok) {
-          await fetchDayDetails()
-          await fetchCalendarData()
+          await Promise.all([
+            fetchDayDetails(),
+            fetchCalendarData()
+          ])
         }
       } catch (e) {
         console.error(e)
+      } finally {
+        activeRequestsCount.value--
       }
     }
 
     const initDashboard = async () => {
-      await fetchCalendarData()
-      await fetchDayDetails()
+      await Promise.all([
+        fetchCalendarData(),
+        fetchDayDetails()
+      ])
     }
 
     // Calendar navigations watch
@@ -1026,8 +1061,12 @@ export default {
     const submitVerification = async () => {
       if (!capturedImage.value) return
       
+      isUploading.value = true
+      uploadStatusMessage.value = '인증 준비 중...'
+      
       try {
         // 1. Get S3 Pre-signed URL from Spring Boot
+        uploadStatusMessage.value = '업로드 링크 생성 중...'
         const presignedRes = await fetch(`${API_BASE}/api/todos/presigned-url?extension=jpg`, {
           headers: { 'Authorization': token.value }
         })
@@ -1037,6 +1076,7 @@ export default {
         const uploadUrl = presignedData.uploadUrl
         
         // 2. Upload image binary directly to AWS S3
+        uploadStatusMessage.value = '사진 파일을 안전하게 전송 중...'
         const imageBlob = dataURItoBlob(capturedImage.value)
         const s3UploadRes = await fetch(uploadUrl, {
           method: 'PUT',
@@ -1050,6 +1090,7 @@ export default {
         const cleanS3ImageUrl = uploadUrl.split('?')[0]
         
         // 3. Confirm verification to Backend DB
+        uploadStatusMessage.value = '인증 내역 저장 중...'
         const verifyRes = await fetch(`${API_BASE}/api/todos/verify`, {
           method: 'POST',
           headers: { 
@@ -1063,8 +1104,11 @@ export default {
         })
         
         if (verifyRes.ok) {
-          await fetchDayDetails()
-          await fetchCalendarData()
+          uploadStatusMessage.value = '인증 완료! 화면 갱신 중...'
+          await Promise.all([
+            fetchDayDetails(),
+            fetchCalendarData()
+          ])
           closeCameraModal()
         } else {
           const errData = await verifyRes.json()
@@ -1073,6 +1117,9 @@ export default {
       } catch (e) {
         console.error(e)
         alert(`인증 처리 중 오류가 발생했습니다: ${e.message}`)
+      } finally {
+        isUploading.value = false
+        uploadStatusMessage.value = ''
       }
     }
 
@@ -1104,6 +1151,11 @@ export default {
       videoElement,
       capturedImage,
       streak,
+      
+      // Loading States
+      isGlobalLoading,
+      isUploading,
+      uploadStatusMessage,
       formattedCurrentMonth,
       formattedCurrentWeek,
       formattedSelectedDateTitle,
