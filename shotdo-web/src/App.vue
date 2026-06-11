@@ -176,11 +176,11 @@
             </div>
           </div>
 
-          <!-- Weekly Polaroid Board (Share Target - Instagram Story 9:16 Frame) -->
+          <!-- Weekly Y2K Retro-Desktop Board (Share Target - Instagram Story 9:16 Kitsch Frame) -->
           <div v-else id="share-board-container" class="weekly-board-wrapper">
             <div class="share-board-header">
-              <div class="share-title-main">ShotDo Log</div>
-              <div class="share-user-subtitle">{{ nickname }}님의 주간 인증</div>
+              <div class="share-title-main">WEEKLY RECAP 💖</div>
+              <div class="share-user-subtitle">{{ nickname }}님의 주간 기록지</div>
               <div class="share-date-range">{{ formattedCurrentWeek }}</div>
             </div>
 
@@ -188,7 +188,7 @@
               <div 
                 v-for="cell in weeklyDays" 
                 :key="cell.dateString"
-                class="weekly-polaroid-card"
+                class="weekly-polaroid-card y2k-window-card"
                 :class="{ 
                   'today': cell.isToday,
                   'status-verified': cell.isVerified,
@@ -196,7 +196,17 @@
                 }"
                 @click="selectDate(cell.date)"
               >
-                <!-- Polaroid Photo Area (Square) -->
+                <!-- Y2K Window Top Header Bar -->
+                <div class="y2k-window-header">
+                  <span class="y2k-window-title">{{ cell.dayName }}_{{ cell.dayNumber }}.EXE</span>
+                  <div class="y2k-window-controls">
+                    <span class="y2k-dot red"></span>
+                    <span class="y2k-dot yellow"></span>
+                    <span class="y2k-dot green"></span>
+                  </div>
+                </div>
+
+                <!-- Window Content (Square Photo) -->
                 <div class="polaroid-photo-area">
                   <img 
                     v-if="cell.isVerified && cell.photo" 
@@ -218,27 +228,34 @@
                   </div>
                 </div>
                 
-                <!-- Polaroid Bottom Caption -->
-                <div class="polaroid-caption">
-                  <span class="polaroid-day-name">{{ cell.dayName }}</span>
-                  <span class="polaroid-date-num">{{ cell.dayNumber }}</span>
+                <!-- Y2K Window Footer (Status Bar) -->
+                <div class="y2k-window-footer">
+                  <span class="y2k-status-text">
+                    {{ cell.isVerified ? 'STATUS: OK!' : (cell.hasTodos ? 'STATUS: TODO' : 'STATUS: NULL') }}
+                  </span>
                 </div>
               </div>
 
-              <!-- 8th Slot: Branded Polaroid Card -->
-              <div class="weekly-polaroid-card brand-card">
-                <div class="brand-card-inner">
-                  <div class="brand-card-logo">
-                    <svg viewBox="0 0 24 24">
-                      <path d="M4 4h3l2-2h6l2 2h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm8 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/>
-                    </svg>
+              <!-- 8th Slot: Retro Tamagotchi Card -->
+              <div class="weekly-polaroid-card brand-card y2k-game-card">
+                <div class="y2k-window-header">
+                  <span class="y2k-window-title">TAMAGOTCHI.SYS</span>
+                  <div class="y2k-window-controls">
+                    <span class="y2k-dot red"></span>
+                    <span class="y2k-dot yellow"></span>
+                    <span class="y2k-dot green"></span>
                   </div>
-                  <div class="brand-card-title">ShotDo</div>
-                  <div class="brand-card-subtitle">Everyday Routine</div>
-                  <div class="brand-card-streak">
-                    <span>🔥</span>
-                    <span>연속 {{ streak }}일</span>
+                </div>
+                <div class="y2k-tamagotchi-screen">
+                  <div class="y2k-game-character">👾</div>
+                  <div class="y2k-game-stats">
+                    <div class="y2k-game-title">STREAK</div>
+                    <div class="y2k-game-val">🔥 {{ streak }}일</div>
                   </div>
+                </div>
+                <div class="y2k-game-buttons">
+                  <span class="y2k-game-btn pink"></span>
+                  <span class="y2k-game-btn blue"></span>
                 </div>
               </div>
             </div>
@@ -510,7 +527,7 @@ export default {
     const calendarStates = ref({})
     
     // View mode: 'month' or 'week'
-    const viewMode = ref('month')
+    const viewMode = ref('week')
 
     // Selected date details
     const todosForSelectedDate = ref([])
