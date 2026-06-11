@@ -208,13 +208,11 @@
 
                 <!-- Window Content (Square Photo) -->
                 <div class="polaroid-photo-area">
-                  <img 
+                  <div 
                     v-if="cell.isVerified && cell.photo" 
-                    :src="cell.photo + '?t=' + cell.dateString" 
-                    alt="인증샷" 
                     class="polaroid-img" 
-                    crossorigin="anonymous"
-                  />
+                    :style="{ backgroundImage: 'url(' + cell.photo + '?t=' + cell.dateString + ')' }"
+                  ></div>
                   <!-- Success check mark badge on image -->
                   <div v-if="cell.isVerified" class="polaroid-success-badge">
                     <svg viewBox="0 0 24 24">
