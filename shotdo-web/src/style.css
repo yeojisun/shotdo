@@ -1,5 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&family=Nanum+Pen+Script&display=swap');
 
+@font-face {
+  font-family: 'OwnglyphEunchong';
+  src: url('/fonts/ownglyph_eunchong.woff2') format('woff2'),
+       url('/fonts/ownglyph_eunchong.woff') format('woff'),
+       url('/fonts/ownglyph_eunchong.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --bg-primary: #0a0c10;
   --bg-secondary: #121620;
@@ -1088,7 +1098,7 @@ h2 {
   justify-content: space-between;
   align-items: center;
   padding: 0.25rem 0.25rem 0 0.25rem;
-  font-family: 'Nanum Pen Script', cursive;
+  font-family: 'OwnglyphEunchong', 'Nanum Pen Script', cursive;
   font-size: 1.4rem;
   color: #1f2937;
   line-height: 1.1;
