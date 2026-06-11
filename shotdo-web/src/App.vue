@@ -39,8 +39,9 @@
             <input v-model="authNickname" type="text" class="todo-input" placeholder="닉네임을 입력하세요" required />
           </div>
 
-          <button type="submit" class="btn-large btn-mint" style="margin-top: 1rem;">
-            {{ isLoginMode ? '로그인하기' : '가입하기' }}
+          <button type="submit" class="btn-large btn-mint" :class="{ 'btn-disabled': isGlobalLoading }" :disabled="isGlobalLoading" style="margin-top: 1rem;">
+            <span v-if="isGlobalLoading">{{ isLoginMode ? '로그인 중...' : '가입 중...' }}</span>
+            <span v-else>{{ isLoginMode ? '로그인하기' : '가입하기' }}</span>
           </button>
         </form>
 
@@ -550,6 +551,7 @@ export default {
         ? { username: authUsername.value, password: authPassword.value }
         : { username: authUsername.value, password: authPassword.value, nickname: authNickname.value }
 
+      activeRequestsCount.value++
       try {
         const res = await fetch(url, {
           method: 'POST',
@@ -580,6 +582,8 @@ export default {
         }
       } catch (e) {
         authError.value = e.message
+      } finally {
+        activeRequestsCount.value--
       }
     }
 
